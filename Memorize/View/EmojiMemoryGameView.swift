@@ -36,11 +36,18 @@ struct EmojiMemoryGameView: View {
     }
     
     var body: some View {
-        VStack {
-            title
-            gameBody
+        ZStack(alignment: .bottom) {
+            VStack {
+                title
+                gameBody
+                HStack {
+                    shuffleButton
+                    Spacer()
+                    restartButton
+                }
+                .padding(.horizontal)
+            }
             deckBody
-            shuffleButton
         }
         .padding()
     }
@@ -92,14 +99,20 @@ struct EmojiMemoryGameView: View {
     
     var shuffleButton: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: DrawingConstants.cornerRadius)
-                .fill()
-                .foregroundColor(.red)
-                .opacity(DrawingConstants.buttonOpacity)
-                .aspectRatio(9, contentMode: .fit)
             Button("Shuffle") {
                 withAnimation {
                     game.shuffle()
+                }
+            }
+        }
+    }
+    
+    var restartButton: some View {
+        ZStack {
+            Button("Restart") {
+                withAnimation {
+                    dealt = []
+                    game.restart()
                 }
             }
         }
