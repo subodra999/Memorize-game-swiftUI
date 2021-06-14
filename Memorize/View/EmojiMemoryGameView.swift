@@ -9,27 +9,78 @@ import SwiftUI
 
 struct EmojiMemoryGameView: View {
     
-    @ObservedObject var viewModel: EmojiMemoryGame
+    @ObservedObject var game: EmojiMemoryGame
+    
+    @State private var dealt = Set<Int>()
+    
+    private func deal(_ card: EmojiMemoryGame.Card) {
+        dealt.insert(card.id)
+    }
+    
+    private func isUndealt(_ card: EmojiMemoryGame.Card) -> Bool {
+        !dealt.contains(card.id)
+    }
     
     var body: some View {
         VStack {
-            Text("Memorize!")
-                .font(.largeTitle)
-            AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
-                if card.isMatched && !card.isFaceUp {
-                    Rectangle().opacity(0)
-                } else {
-                    CardView(card: card)
-                        .padding(4)
-                        .onTapGesture {
-                            viewModel.choose(card)
+            title
+            gameBody
+            shuffleButton
+        }
+        .padding()
+    }
+    
+    var title: some View {
+        Text("Memorize!")
+            .font(.largeTitle)
+    }
+    
+    var gameBody: some View {
+        AspectVGrid(items: game.cards, aspectRatio: 2/3) { card in
+            if isUndealt(card) || (card.isMatched && !card.isFaceUp) {
+                Color.clear
+            } else {
+                CardView(card: card)
+                    .padding(4)
+                    .transition(AnyTransition.asymmetric(insertion: .scale, removal: .opacity))
+                    .onTapGesture {
+                        withAnimation {
+                            game.choose(card)
                         }
+                    }
+            }
+        }
+        .onAppear {
+            // "deal" cards
+            withAnimation {
+                for card in game.cards {
+                    deal(card)
                 }
             }
-            .foregroundColor(.red)
-            .padding(.horizontal)
+        }
+        .foregroundColor(.red)
+    }
+    
+    var shuffleButton: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: DrawingConstants.cornerRadius)
+                .fill()
+                .foregroundColor(.red)
+                .opacity(DrawingConstants.buttonOpacity)
+                .aspectRatio(9, contentMode: .fit)
+            Button("Shuffle") {
+                withAnimation {
+                    game.shuffle()
+                }
+            }
         }
     }
+    
+    private struct DrawingConstants {
+        static let cornerRadius: CGFloat = 20
+        static let buttonOpacity: Double = 0.9
+    }
+    
 }
 
 struct CardView: View {
@@ -67,6 +118,6 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         let game = EmojiMemoryGame()
         game.choose(game.cards.first!)
-        return EmojiMemoryGameView(viewModel: game)
+        return EmojiMemoryGameView(game: game)
     }
 }

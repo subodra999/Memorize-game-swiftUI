@@ -38,6 +38,10 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
         }
     }
     
+    mutating func shuffle() {
+        cards.shuffle()
+    }
+    
     init(numOfPairsOfCards: Int, createCardContent: (Int) -> CardContent) {
         cards = Array<Card>()
         // add numOfPairsOfCards x`2 cards to cards array
@@ -46,6 +50,7 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
             cards.append(Card(content: content, id: 2 * pairIndex))
             cards.append(Card(content: content, id: 2 * pairIndex + 1))
         }
+        cards.shuffle()
     }
     
     struct Card: Identifiable {
